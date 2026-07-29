@@ -1,6 +1,14 @@
+from stack import Stack
 from tokenizer import tokenizar_basico
 
 EPSILON = "eps"
+
+# simbolo interno para la concatenacion implicita. No usamos "." porque
+# ese caracter tambien aparece como literal en las expresiones (ej. ".com").
+# Usamos un simbolo ASCII para evitar problemas de encoding en consola.
+CONCAT = "&"
+
+PRECEDENCIA = {"|": 1, CONCAT: 2, "*": 3}
 
 
 def agrupar_clases(tokens):
@@ -84,3 +92,85 @@ def expandir_extensiones(tokens):
             i += 1
 
     return resultado
+
+
+def _es_operando(token):
+    return token not in ("(", ")", "|", "*")
+
+
+def _termina_operando(token):
+    return _es_operando(token) or token in (")", "*")
+
+
+def _inicia_operando(token):
+    return _es_operando(token) or token == "("
+
+
+def insertar_concatenacion(tokens):
+    """Inserta el operador de concatenacion implicita entre dos tokens.
+
+    En estas expresiones "ab" significa "a seguido de b", sin ningun
+    simbolo entre medio. Aqui se hace explicita esa concatenacion para
+    poder tratarla como un operador mas dentro de Shunting Yard.
+    """
+    resultado = []
+
+    for i, token in enumerate(tokens):
+        if i > 0 and _termina_operando(tokens[i - 1]) and _inicia_operando(token):
+            resultado.append(CONCAT)
+        resultado.append(token)
+
+    return resultado
+
+
+def convertir_a_postfix(expresion):
+    """Convierte una expresion regular de infix a postfix (Shunting Yard).
+
+    Devuelve una tupla (postfix, pasos): postfix es la lista de tokens en
+    orden postfix, y pasos es una lista de strings que describe cada
+    operacion hecha sobre la pila y la salida.
+    """
+    tokens = tokenizar_basico(expresion)
+    tokens = agrupar_clases(tokens)
+    tokens = expandir_extensiones(tokens)
+    tokens = insertar_concatenacion(tokens)
+
+    pila = Stack()
+    salida = []
+    pasos = []
+
+    for token in tokens:
+        if token == "(":
+            pila.push(token)
+            pasos.append(f"'{token}' -> push -> pila: {pila.to_list()}")
+
+        elif token == ")":
+            while not pila.is_empty() and pila.peek() != "(":
+                operador = pila.pop()
+                salida.append(operador)
+                pasos.append(f"pop '{operador}' a la salida -> salida: {list(salida)}")
+            pila.pop()  # descarta el '(' que le corresponde a este ')'
+            pasos.append(f"')' cierra grupo -> pila: {pila.to_list()}")
+
+        elif token in PRECEDENCIA:
+            while (
+                not pila.is_empty()
+                and pila.peek() != "("
+                and PRECEDENCIA.get(pila.peek(), 0) >= PRECEDENCIA[token]
+            ):
+                operador = pila.pop()
+                salida.append(operador)
+                pasos.append(f"pop '{operador}' a la salida (precedencia) -> salida: {list(salida)}")
+            pila.push(token)
+            pasos.append(f"push '{token}' -> pila: {pila.to_list()}")
+
+        else:
+            salida.append(token)
+            pasos.append(f"'{token}' es operando -> salida: {list(salida)}")
+
+    while not pila.is_empty():
+        operador = pila.pop()
+        salida.append(operador)
+        pasos.append(f"pop '{operador}' a la salida (fin de expresion) -> salida: {list(salida)}")
+
+    return salida, pasos
