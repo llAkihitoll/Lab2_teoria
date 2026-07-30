@@ -1,7 +1,10 @@
 from stack import Stack
 from tokenizer import tokenizar_basico
 
-EPSILON = "eps"
+# un solo caracter ASCII: asi funciona igual si aparece escrito tal cual en
+# una expresion de entrada (el tokenizer lo lee como un token normal) que
+# cuando lo genera expandir_extensiones() al expandir un '?'
+EPSILON = "~"
 
 # simbolo interno para la concatenacion implicita. No usamos "." porque
 # ese caracter tambien aparece como literal en las expresiones (ej. ".com").
@@ -67,7 +70,7 @@ def _extraer_operando_previo(tokens, indice):
 def expandir_extensiones(tokens):
     """Reescribe '+' y '?' en terminos de los operadores primitivos.
 
-    'X+' se convierte en 'XX*' y 'X?' se convierte en '(X|eps)', donde X es
+    'X+' se convierte en 'XX*' y 'X?' se convierte en '(X|~)', donde X es
     el operando (o grupo) inmediatamente anterior. Asi el resto del
     algoritmo solo tiene que conocer '|', '*' y la concatenacion.
     """

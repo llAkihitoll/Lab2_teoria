@@ -56,4 +56,13 @@ TODO: agregar link al video de YouTube (no listado) con la ejecucion de los prog
 
 ## Como ejecutar
 
-TODO: se agregara en los siguientes commits, junto con la implementacion de cada problema.
+Requiere Python 3. No hay dependencias externas.
+
+```
+python problema2.py ejemplos/problema2.txt
+python problema3.py ejemplos/problema3.txt
+```
+
+Cada programa recibe la ruta a un archivo de texto con una expresion por
+linea, y para cada una imprime los pasos hechos sobre la pila y el
+resultado final (balanceada/no balanceada, o la expresion en postfix).
