@@ -52,7 +52,7 @@ Adaptacion para expresiones regulares:
 
 ## Video
 
-TODO: agregar link al video de YouTube (no listado) con la ejecucion de los programas.
+Video de YouTube (no listado) con la ejecucion de los programas: https://youtu.be/-Dqk36rnSBs
 
 ## Como ejecutar
 
